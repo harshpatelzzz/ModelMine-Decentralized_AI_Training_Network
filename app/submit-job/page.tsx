@@ -29,7 +29,7 @@ export default function SubmitJobPage() {
     setLoading(true)
 
     try {
-      await axios.post("/api/jobs", {
+      const response = await axios.post("/api/jobs", {
         modelName: formData.modelName,
         datasetUrl: formData.datasetUrl,
         computeRequirement: formData.computeRequirement[0],
@@ -37,13 +37,25 @@ export default function SubmitJobPage() {
         description: formData.description,
       })
 
-      toast.success("Job submitted successfully!", {
-        description: "Your training job has been added to the network.",
+      const transactionHash = response.data.transactionHash
+
+      toast.success("Transaction Successful!", {
+        description: (
+          <div>
+            <p className="font-medium">{response.data.message}</p>
+            {transactionHash && (
+              <p className="text-xs font-mono mt-1 opacity-80">
+                TX: {transactionHash.slice(0, 10)}...{transactionHash.slice(-8)}
+              </p>
+            )}
+          </div>
+        ),
+        duration: 5000,
       })
 
       setTimeout(() => {
         router.push("/dashboard")
-      }, 1500)
+      }, 2000)
     } catch (error) {
       toast.error("Failed to submit job", {
         description: "Please check your inputs and try again.",

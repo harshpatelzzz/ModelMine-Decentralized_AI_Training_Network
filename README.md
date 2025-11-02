@@ -82,3 +82,17 @@ docker run -p 3000:3000 datn
 ## 📝 License
 
 MIT
+
+## 👤 Author
+
+**Harsh Patel**
+
+- GitHub: [@harshpatelzzz](https://github.com/harshpatelzzz)
+- Email: harshpatel174101@gmail.com
+- Project: [decentralized-ai-training-network](https://github.com/harshpatelzzz/decentralized-ai-training-network)
+
+## 📧 Contact
+
+For questions, suggestions, or support, please contact:
+- Email: harshpatel174101@gmail.com
+- GitHub Issues: [Create an issue](https://github.com/harshpatelzzz/decentralized-ai-training-network/issues)

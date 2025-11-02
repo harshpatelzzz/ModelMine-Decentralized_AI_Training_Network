@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Simulate transaction processing delay
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
     const newJob = createJob({
       modelName,
       datasetUrl,
@@ -33,7 +36,14 @@ export async function POST(request: NextRequest) {
       description: description || "",
     })
 
-    return NextResponse.json(newJob, { status: 201 })
+    return NextResponse.json(
+      {
+        ...newJob,
+        transactionHash: `0x${Math.random().toString(16).slice(2, 66)}`,
+        message: "Transaction successful! Job submitted to the network.",
+      },
+      { status: 201 }
+    )
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to create job" },

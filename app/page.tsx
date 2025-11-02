@@ -198,26 +198,26 @@ export default function Home() {
               Decentralized AI Training Network
             </p>
           </div>
-          <div>
-            <h3 className="font-bold mb-4">Resources</h3>
-            <div className="flex flex-col gap-2">
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-                <FileText className="h-4 w-4" />
-                Documentation
-              </Link>
-              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-                <Github className="h-4 w-4" />
-                GitHub
+            <div>
+              <h3 className="font-bold mb-4">Resources</h3>
+              <div className="flex flex-col gap-2">
+                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
+                  <FileText className="h-4 w-4" />
+                  Documentation
+                </Link>
+                <Link href="https://github.com/harshpatelzzz/decentralized-ai-training-network" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
+                  <Github className="h-4 w-4" />
+                  GitHub
+                </Link>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-bold mb-4">Contact</h3>
+              <Link href="mailto:harshpatel174101@gmail.com" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
+                <Mail className="h-4 w-4" />
+                harshpatel174101@gmail.com
               </Link>
             </div>
-          </div>
-          <div>
-            <h3 className="font-bold mb-4">Contact</h3>
-            <Link href="#" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-              <Mail className="h-4 w-4" />
-              support@datn.io
-            </Link>
-          </div>
         </div>
         <div className="text-center text-sm text-muted-foreground mt-8">
           © 2024 DATN. All rights reserved.

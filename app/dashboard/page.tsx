@@ -111,20 +111,43 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {(["all", "pending", "in-progress", "completed"] as StatusFilter[]).map(
-          (status) => (
-            <Button
-              key={status}
-              variant={filter === status ? "default" : "outline"}
-              onClick={() => setFilter(status)}
-              className="capitalize"
-            >
-              {status === "all" ? "All Jobs" : status.replace("-", " ")}
-            </Button>
-          )
-        )}
+      {/* Filters & Sort */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
+          {(["all", "pending", "in-progress", "completed"] as StatusFilter[]).map(
+            (status) => (
+              <Button
+                key={status}
+                variant={filter === status ? "default" : "outline"}
+                onClick={() => setFilter(status)}
+                className="capitalize"
+              >
+                {status === "all" ? "All Jobs" : status.replace("-", " ")}
+              </Button>
+            )
+          )}
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Sort:</span>
+          <select
+            className="px-3 py-1.5 rounded-md border border-input bg-background text-sm"
+            onChange={(e) => {
+              const sorted = [...jobs]
+              if (e.target.value === "newest") {
+                sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              } else if (e.target.value === "oldest") {
+                sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+              } else if (e.target.value === "stake") {
+                sorted.sort((a, b) => b.tokenStake - a.tokenStake)
+              }
+              setJobs(sorted)
+            }}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="stake">Highest Stake</option>
+          </select>
+        </div>
       </div>
 
       {/* Jobs Grid */}
