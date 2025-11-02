@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Decentralized AI Training Network (DATN)
 
-## Getting Started
+A next-generation decentralized web platform that simulates a blockchain-based system where users can submit and manage distributed AI training jobs across the network.
 
-First, run the development server:
+## 🚀 Features
+
+- **Submit AI Training Jobs** - Create and manage decentralized AI training requests
+- **Job Dashboard** - Monitor active and historical training jobs with real-time progress
+- **Network Overview** - Track node contributions and network statistics
+- **Light/Dark Theme** - Beautiful theme system with persistent storage
+- **Responsive Design** - Modern, professional UI that works on all devices
+
+## 🛠️ Tech Stack
+
+- **Next.js 14** (App Router + TypeScript)
+- **Tailwind CSS** - Styling and design system
+- **shadcn/ui** - Accessible component library
+- **Framer Motion** - Smooth animations
+- **Recharts** - Data visualization
+- **Sonner** - Toast notifications
+- **Axios** - API client
+
+## 📦 Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🐳 Docker
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Build Docker image
+docker build -t datn .
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run with Docker Compose
+docker-compose up -d
 
-## Learn More
+# Or run directly
+docker run -p 3000:3000 datn
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 🎨 Design
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Light Mode**: Indigo (#6366F1) + Slate palette
+- **Dark Mode**: Violet (#7C3AED) + Deep Gray palette
+- **Font**: Inter (modern sans-serif)
+- **Style**: Rounded cards, glass blur effects, gradient accents
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+```
+├── app/
+│   ├── api/          # Mock API routes
+│   ├── dashboard/    # Job dashboard page
+│   ├── network/      # Network overview page
+│   ├── submit-job/   # Job submission page
+│   └── page.tsx      # Landing page
+├── components/
+│   ├── ui/           # shadcn/ui components
+│   ├── navbar.tsx    # Navigation bar
+│   └── theme-*.tsx   # Theme system
+└── lib/
+    └── mock-data.ts  # In-memory data store
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 API Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `GET /api/jobs` - Fetch all training jobs
+- `POST /api/jobs` - Create a new training job
+- `GET /api/network` - Get network statistics and nodes
+
+## 📝 License
+
+MIT
