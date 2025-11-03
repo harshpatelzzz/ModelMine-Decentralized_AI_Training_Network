@@ -13,7 +13,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "DATN - Decentralized AI Training Network",
-  description: "Connect AI model creators, node operators, and validators in a decentralized environment",
+  description:
+    "Connect AI model creators, node operators, and validators in a decentralized environment",
   keywords: ["AI", "blockchain", "decentralized", "machine learning", "Web3"],
   authors: [{ name: "Harsh Patel", url: "https://github.com/harshpatelzzz" }],
   creator: "Harsh Patel",
@@ -36,23 +37,23 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-(function() {
-  const storageKey = 'datn-theme';
-  const stored = localStorage.getItem(storageKey);
-  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  const theme = stored || 'system';
-  
-  if (theme === 'dark' || (theme === 'system' && systemTheme === 'dark')) {
-    document.documentElement.classList.add('dark');
-  } else {
-    document.documentElement.classList.remove('dark');
-  }
-})()
+              (function() {
+                const storageKey = 'datn-theme';
+                const stored = localStorage.getItem(storageKey);
+                const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                const theme = stored || 'system';
+                
+                if (theme === 'dark' || (theme === 'system' && systemTheme === 'dark')) {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              })();
             `,
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${inter.variable} antialiased scroll-smooth`}>
         <Providers>
           <ThemeProvider defaultTheme="system" storageKey="datn-theme">
             <div className="min-h-screen bg-background">
