@@ -28,13 +28,17 @@ export default function Home() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("/api/network")
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+        const res = await axios.get(`${API_URL}/network`)
         setStats(res.data.stats)
       } catch (error) {
         console.error("Failed to fetch stats:", error)
       }
     }
     fetchStats()
+    // Refresh stats every 5 seconds
+    const interval = setInterval(fetchStats, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const statCards = [

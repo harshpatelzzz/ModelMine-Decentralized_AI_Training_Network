@@ -33,14 +33,15 @@ router.post("/signup", async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        passwordHash,
-        role: "USER",
-      },
+          // Create user with initial token balance (1000 tokens)
+          const user = await prisma.user.create({
+            data: {
+              email,
+              name,
+              passwordHash,
+              role: "USER",
+              tokenBalance: 1000, // Give new users 1000 tokens to start
+            },
       select: {
         id: true,
         email: true,

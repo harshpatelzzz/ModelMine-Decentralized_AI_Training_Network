@@ -15,17 +15,17 @@ let socketIOClient = null;
 async function processJob(jobData) {
     const { jobId } = jobData;
     console.log(`🔄 Processing job: ${jobId}`);
+    // Get job from database (outside try block for error handling)
+    let job = await prisma.job.findUnique({
+        where: { id: jobId },
+        include: {
+            assignedNode: true,
+        },
+    });
+    if (!job) {
+        throw new Error(`Job ${jobId} not found`);
+    }
     try {
-        // Get job from database
-        const job = await prisma.job.findUnique({
-            where: { id: jobId },
-            include: {
-                assignedNode: true,
-            },
-        });
-        if (!job) {
-            throw new Error(`Job ${jobId} not found`);
-        }
         // Update job status to RUNNING
         await prisma.job.update({
             where: { id: jobId },
@@ -70,6 +70,9 @@ async function processJob(jobData) {
             epochs: 10,
             completedAt: new Date().toISOString(),
         };
+        // Calculate token rewards
+        const tokenReward = job.tokenReward || Math.floor((job.tokenStake || 100) * 0.8);
+        const networkFee = (job.tokenStake || 100) - tokenReward;
         // Update job to COMPLETED
         await prisma.job.update({
             where: { id: jobId },
@@ -79,6 +82,34 @@ async function processJob(jobData) {
                 result,
             },
         });
+        // Reward node if assigned
+        if (job.assignedNodeId) {
+            await prisma.node.update({
+                where: { id: job.assignedNodeId },
+                data: {
+                    tokenBalance: {
+                        increment: tokenReward,
+                    },
+                    totalEarned: {
+                        increment: tokenReward,
+                    },
+                },
+            });
+            // Create contribution record
+            await prisma.contribution.create({
+                data: {
+                    nodeId: job.assignedNodeId,
+                    jobId: jobId,
+                    tokensEarned: tokenReward,
+                    details: {
+                        reward: tokenReward,
+                        networkFee: networkFee,
+                        completedAt: new Date().toISOString(),
+                    },
+                },
+            });
+            console.log(`💰 Node ${job.assignedNodeId} earned ${tokenReward} tokens`);
+        }
         // Emit completion via Redis pub/sub
         redis.publish(`job:${jobId}:progress`, JSON.stringify({
             jobId,
@@ -111,6 +142,18 @@ async function processJob(jobData) {
     }
     catch (error) {
         console.error(`Error processing job ${jobId}:`, error);
+        // Refund tokens to user if job fails
+        if (job.tokenStake && job.tokenStake > 0) {
+            await prisma.user.update({
+                where: { id: job.submitterId },
+                data: {
+                    tokenBalance: {
+                        increment: job.tokenStake, // Refund full stake
+                    },
+                },
+            });
+            console.log(`💸 Refunded ${job.tokenStake} tokens to user ${job.submitterId}`);
+        }
         // Update job to FAILED
         await prisma.job.update({
             where: { id: jobId },

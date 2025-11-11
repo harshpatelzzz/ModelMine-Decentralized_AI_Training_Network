@@ -9,12 +9,13 @@ const createJobSchema = z.object({
   description: z.string().optional(),
   config: z.record(z.any()),
   submitterId: z.string(),
+  tokenStake: z.number().int().min(0).optional().default(100), // Default 100 tokens
 })
 
 // Create a new job
 router.post("/", async (req, res) => {
   try {
-    const { title, description, config, submitterId } = createJobSchema.parse(req.body)
+    const { title, description, config, submitterId, tokenStake } = createJobSchema.parse(req.body)
 
     // Verify user exists
     const user = await prisma.user.findUnique({
@@ -25,6 +26,53 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ error: "User not found" })
     }
 
+    // Check if user has enough tokens (or initialize if null/0)
+    const userBalance = user.tokenBalance ?? 0
+    if (userBalance < tokenStake) {
+      // If user has 0 balance, give them starting tokens
+      if (userBalance === 0) {
+        await prisma.user.update({
+          where: { id: submitterId },
+          data: {
+            tokenBalance: 1000, // Give starting tokens
+          },
+        })
+        // Retry the check
+        if (1000 < tokenStake) {
+          return res.status(400).json({ 
+            error: `Insufficient token balance. You have 1000 tokens, but need ${tokenStake}. Please reduce your stake.` 
+          })
+        }
+      } else {
+        return res.status(400).json({ 
+          error: `Insufficient token balance. You have ${userBalance} tokens, but need ${tokenStake}.` 
+        })
+      }
+    }
+
+    // Deduct tokens from user
+    await prisma.user.update({
+      where: { id: submitterId },
+      data: {
+        tokenBalance: {
+          decrement: tokenStake,
+        },
+      },
+    })
+
+    // Find an available node to assign the job
+    const availableNode = await prisma.node.findFirst({
+      where: {
+        status: "ONLINE",
+        lastSeen: {
+          gte: new Date(Date.now() - 30000), // Seen in last 30 seconds
+        },
+      },
+      orderBy: {
+        createdAt: "asc", // Assign to oldest node first
+      },
+    })
+
     // Create job
     const job = await prisma.job.create({
       data: {
@@ -33,7 +81,10 @@ router.post("/", async (req, res) => {
         config,
         status: "PENDING",
         progress: 0,
+        tokenStake,
+        tokenReward: Math.floor(tokenStake * 0.8), // 80% reward for node
         submitterId,
+        assignedNodeId: availableNode?.id || null, // Assign to available node
       },
       include: {
         submitter: {

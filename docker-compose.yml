@@ -54,7 +54,7 @@ services:
     build: 
       context: .
       dockerfile: ./api/Dockerfile
-    command: node dist/worker.js
+    command: sh -c "cd /app && npx prisma generate && node dist/worker.js"
     depends_on:
       - api
       - redis

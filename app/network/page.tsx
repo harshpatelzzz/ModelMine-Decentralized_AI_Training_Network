@@ -18,11 +18,29 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import axios from "axios"
-import type { Node, NetworkStats } from "@/lib/mock-data"
-
 interface NetworkData {
-  nodes: Node[]
-  stats: NetworkStats
+  nodes: Array<{
+    id: string
+    name: string
+    status: string
+    uptime: number
+    jobsHandled: number
+    tokensEarned: number
+    lastSeen?: Date | null
+    metrics?: any
+  }>
+  stats: {
+    activeNodes: number
+    totalTokensStaked: number
+    completedJobs: number
+    averageAccuracy: number
+  }
+  jobTimelineData?: Array<{
+    month: string
+    pending: number
+    inProgress: number
+    completed: number
+  }>
 }
 
 export default function NetworkPage() {
@@ -31,11 +49,15 @@ export default function NetworkPage() {
 
   useEffect(() => {
     fetchNetworkData()
+    // Refresh network data every 5 seconds
+    const interval = setInterval(fetchNetworkData, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   const fetchNetworkData = async () => {
     try {
-      const res = await axios.get("/api/network")
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+      const res = await axios.get(`${API_URL}/network`)
       setData(res.data)
     } catch (error) {
       console.error("Failed to fetch network data:", error)
@@ -44,20 +66,13 @@ export default function NetworkPage() {
     }
   }
 
-  // Mock time series data for charts
-  const jobTimelineData = [
-    { month: "Jan", pending: 12, inProgress: 8, completed: 45 },
-    { month: "Feb", pending: 15, inProgress: 10, completed: 52 },
-    { month: "Mar", pending: 18, inProgress: 12, completed: 58 },
-    { month: "Apr", pending: 10, inProgress: 15, completed: 65 },
-    { month: "May", pending: 8, inProgress: 18, completed: 72 },
-    { month: "Jun", pending: 5, inProgress: 20, completed: 80 },
-  ]
+  // Use real job timeline data from API
+  const jobTimelineData = data?.jobTimelineData || []
 
   const tokenDistributionData =
     data?.nodes.map((node) => ({
       name: node.name,
-      tokens: node.tokensEarned,
+      tokens: node.tokensEarned || 0,
     })) || []
 
   return (
@@ -203,6 +218,7 @@ export default function NetworkPage() {
                       <th className="text-left p-4 font-medium">Uptime</th>
                       <th className="text-left p-4 font-medium">Jobs Handled</th>
                       <th className="text-left p-4 font-medium">Tokens Earned</th>
+                      <th className="text-left p-4 font-medium">Last Seen</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -225,6 +241,11 @@ export default function NetworkPage() {
                                 <Circle className="h-2 w-2 fill-current" />
                                 Online
                               </>
+                            ) : node.status === "busy" ? (
+                              <>
+                                <Circle className="h-2 w-2 fill-current" />
+                                Busy
+                              </>
                             ) : (
                               <>
                                 <Circle className="h-2 w-2 fill-current" />
@@ -237,6 +258,9 @@ export default function NetworkPage() {
                         <td className="p-4">{node.jobsHandled}</td>
                         <td className="p-4 font-medium">
                           {node.tokensEarned.toLocaleString()}
+                        </td>
+                        <td className="p-4 text-sm text-muted-foreground">
+                          {node.lastSeen ? new Date(node.lastSeen).toLocaleString() : "Never"}
                         </td>
                       </motion.tr>
                     ))}

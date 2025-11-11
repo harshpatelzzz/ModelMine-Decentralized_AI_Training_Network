@@ -9,6 +9,8 @@ import { jobRoutes } from "./routes/jobs.js";
 import { nodeRoutes } from "./routes/nodes.js";
 import { ledgerRoutes } from "./routes/ledger.js";
 import { authRoutes } from "./routes/auth.js";
+import { networkRoutes } from "./routes/network.js";
+import { userRoutes } from "./routes/users.js";
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -46,6 +48,8 @@ app.use("/auth", authRoutes);
 app.use("/jobs", jobRoutes);
 app.use("/nodes", nodeRoutes);
 app.use("/ledger", ledgerRoutes);
+app.use("/network", networkRoutes);
+app.use("/users", userRoutes);
 // Socket.IO connection handling
 io.on("connection", (socket) => {
     console.log(`Client connected: ${socket.id}`);

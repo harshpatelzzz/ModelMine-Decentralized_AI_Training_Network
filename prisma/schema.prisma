@@ -14,6 +14,7 @@ model User {
   name         String?
   passwordHash String?
   role         UserRole @default(USER)
+  tokenBalance Int      @default(0)
   createdAt    DateTime @default(now())
   jobs         Job[]
 }
@@ -29,15 +30,17 @@ model Job {
   title          String
   description    String?
   config         Json
-  status         JobStatus @default(PENDING)
+  status         JobStatus  @default(PENDING)
   progress       Int       @default(0)
   result         Json?
+  tokenStake     Int        @default(0)
+  tokenReward    Int        @default(0)
   submitterId    String
-  submitter      User      @relation(fields: [submitterId], references: [id], onDelete: Cascade)
+  submitter      User       @relation(fields: [submitterId], references: [id], onDelete: Cascade)
   assignedNodeId String?
-  assignedNode   Node?     @relation(fields: [assignedNodeId], references: [id])
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  assignedNode   Node?      @relation(fields: [assignedNodeId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   contributions  Contribution[]
 }
 
@@ -55,6 +58,8 @@ model Node {
   status        NodeStatus     @default(OFFLINE)
   metrics       Json?
   lastSeen      DateTime?
+  tokenBalance  Int            @default(0)
+  totalEarned   Int            @default(0)
   createdAt     DateTime       @default(now())
   contributions Contribution[]
   jobs          Job[]
@@ -73,6 +78,7 @@ model Contribution {
   node      Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
   jobId     String
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  tokensEarned Int   @default(0)
   details   Json
   createdAt DateTime @default(now())
 }
@@ -84,4 +90,3 @@ model LedgerBlock {
   timestamp DateTime @default(now())
   hash      String   @unique
 }
-
