@@ -18,7 +18,7 @@ export function FeatureCard({ icon: Icon, title, description, delay = 0 }: Featu
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, duration: 0.6, ease: "easeOut" }}
     >
       <motion.div
         className={cn(

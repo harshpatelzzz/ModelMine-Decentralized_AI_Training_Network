@@ -67,7 +67,7 @@ export function Navbar() {
       className="sticky top-0 z-50 w-full border-b border-[var(--border)] backdrop-blur-xl bg-[var(--panel)]/80"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
     >
       {/* Glow underline */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-50" />

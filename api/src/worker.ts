@@ -8,6 +8,7 @@ const prisma = new PrismaClient()
 const redis = new Redis({
   host: process.env.REDIS_HOST || "localhost",
   port: 6379,
+  maxRetriesPerRequest: null, // Required for BullMQ
 })
 
 // Initialize Socket.IO client for worker (if needed)
@@ -17,6 +18,8 @@ let socketIOClient: any = null
 // Process job function
 async function processJob(jobData: { jobId: string }) {
   const { jobId } = jobData
+
+  console.log(`🔄 Processing job: ${jobId}`)
 
   try {
     // Get job from database

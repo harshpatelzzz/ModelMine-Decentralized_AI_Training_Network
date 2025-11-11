@@ -20,12 +20,16 @@ const io = new Server(httpServer, {
 })
 
 // Initialize Prisma
-export const prisma = new PrismaClient()
+// Note: Prisma client is generated in root node_modules
+export const prisma = new PrismaClient({
+  log: ['error', 'warn'],
+})
 
 // Initialize Redis
 const redis = new Redis({
   host: process.env.REDIS_HOST || "localhost",
   port: 6379,
+  maxRetriesPerRequest: null, // Required for BullMQ
 })
 
 // Initialize BullMQ Queue
@@ -64,6 +68,7 @@ io.on("connection", (socket) => {
 const subscriber = new Redis({
   host: process.env.REDIS_HOST || "localhost",
   port: 6379,
+  maxRetriesPerRequest: null, // Required for pub/sub
 })
 
 subscriber.psubscribe("job:*:progress", (err, count) => {
