@@ -10,6 +10,7 @@ import { ThemeToggle } from "./theme-toggle"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { motion } from "framer-motion"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,14 +63,26 @@ export function Navbar() {
   const tokenBalance = 1250
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 glass">
+    <motion.nav
+      className="sticky top-0 z-50 w-full border-b border-[var(--border)] backdrop-blur-xl bg-[var(--panel)]/80"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {/* Glow underline */}
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[var(--primary)] to-transparent opacity-50" />
+      
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Sparkles className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-2 group">
+            <motion.div
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)]"
+              whileHover={{ scale: 1.1, rotate: 180 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Sparkles className="h-5 w-5 text-white" />
+            </motion.div>
+            <span className="text-xl font-bold bg-gradient-to-r from-[var(--primary)] via-[var(--secondary)] to-[var(--primary)] bg-clip-text text-transparent bg-[length:200%_100%] animate-gradient">
               DATN
             </span>
           </Link>
@@ -80,28 +93,55 @@ export function Navbar() {
               const isActive = pathname === item.href
               return (
                 <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? "secondary" : "ghost"}
-                    className={cn(
-                      "gap-2",
-                      isActive && "bg-accent text-accent-foreground"
-                    )}
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "gap-2 relative",
+                        isActive && "text-[var(--primary)]"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                      {isActive && (
+                        <motion.div
+                          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+                          layoutId="activeTab"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                    </Button>
+                  </motion.div>
                 </Link>
               )
             })}
             {session?.user && (session.user as any).role === "admin" && (
               <Link href="/admin">
-                <Button
-                  variant={pathname === "/admin" ? "secondary" : "ghost"}
-                  className="gap-2"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <Shield className="h-4 w-4" />
-                  Admin
-                </Button>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "gap-2 relative",
+                      pathname === "/admin" && "text-[var(--primary)]"
+                    )}
+                  >
+                    <Shield className="h-4 w-4" />
+                    Admin
+                    {pathname === "/admin" && (
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+                        layoutId="activeTab"
+                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      />
+                    )}
+                  </Button>
+                </motion.div>
               </Link>
             )}
           </div>
@@ -110,26 +150,34 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {/* Wallet Connection */}
           {isConnected && address && (
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/50 border border-border">
-              <Wallet className="h-4 w-4 text-primary" />
-              <span className="text-sm font-mono">
+            <motion.div
+              className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--primary)]/10 border border-[var(--border)] backdrop-blur-sm"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Wallet className="h-4 w-4 text-[var(--primary)]" />
+              <span className="text-sm font-mono text-[var(--text)]">
                 {address.slice(0, 6)}...{address.slice(-4)}
               </span>
               {balance && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-[var(--subtext)]">
                   {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
                 </span>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Token Balance */}
           {session?.user && (
-            <div className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
-              <Coins className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold">{tokenBalance.toLocaleString()}</span>
-              <span className="text-xs text-muted-foreground">DATN</span>
-            </div>
+            <motion.div
+              className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[var(--primary)]/20 to-[var(--secondary)]/20 border border-[var(--border)] backdrop-blur-sm"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <Coins className="h-4 w-4 text-[var(--primary)]" />
+              <span className="text-sm font-semibold text-[var(--text)]">{tokenBalance.toLocaleString()}</span>
+              <span className="text-xs text-[var(--subtext)]">DATN</span>
+            </motion.div>
           )}
 
           {/* Wallet Connect Button */}
@@ -154,10 +202,17 @@ export function Navbar() {
                       {(() => {
                         if (!connected) {
                           return (
-                            <Button onClick={openConnectModal} size="sm" variant="outline">
-                              <Wallet className="h-4 w-4 mr-2" />
-                              Connect Wallet
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                onClick={openConnectModal}
+                                size="sm"
+                                variant="outline"
+                                className="border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)]/10"
+                              >
+                                <Wallet className="h-4 w-4 mr-2" />
+                                Connect Wallet
+                              </Button>
+                            </motion.div>
                           )
                         }
                         return null
@@ -175,43 +230,60 @@ export function Navbar() {
           {session?.user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(session.user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
+                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                  <Button variant="ghost" size="icon" className="rounded-full border border-[var(--border)] hover:border-[var(--primary)]">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-white">
+                        {getInitials(session.user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </motion.div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent
+                align="end"
+                className="w-56 bg-[var(--panel)]/95 backdrop-blur-xl border-[var(--border)]"
+              >
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
+                    <p className="text-sm font-medium leading-none text-[var(--text)]">
                       {session.user.name}
                     </p>
-                    <p className="text-xs leading-none text-muted-foreground">
+                    <p className="text-xs leading-none text-[var(--subtext)]">
                       {session.user.email}
                     </p>
                     {(session.user as any).role === "admin" && (
-                      <Badge variant="default" className="w-fit mt-1">
+                      <Badge
+                        variant="default"
+                        className="w-fit mt-1 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)]"
+                      >
                         Admin
                       </Badge>
                     )}
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+                <DropdownMenuSeparator className="bg-[var(--border)]" />
+                <DropdownMenuItem
+                  onClick={() => router.push("/dashboard")}
+                  className="text-[var(--text)] hover:bg-[var(--primary)]/10 focus:bg-[var(--primary)]/10"
+                >
                   <User className="mr-2 h-4 w-4" />
                   Dashboard
                 </DropdownMenuItem>
                 {(session.user as any).role === "admin" && (
-                  <DropdownMenuItem onClick={() => router.push("/admin")}>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/admin")}
+                    className="text-[var(--text)] hover:bg-[var(--primary)]/10 focus:bg-[var(--primary)]/10"
+                  >
                     <Shield className="mr-2 h-4 w-4" />
                     Admin Panel
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <DropdownMenuSeparator className="bg-[var(--border)]" />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
@@ -219,24 +291,29 @@ export function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push("/login")}
-              >
-                Sign In
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => router.push("/signup")}
-                className="hidden sm:flex"
-              >
-                Sign Up
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => router.push("/login")}
+                  className="text-[var(--text)] hover:text-[var(--primary)]"
+                >
+                  Sign In
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  size="sm"
+                  onClick={() => router.push("/signup")}
+                  className="hidden sm:flex bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white hover:opacity-90"
+                >
+                  Sign Up
+                </Button>
+              </motion.div>
             </div>
           )}
         </div>
       </div>
-    </nav>
+    </motion.nav>
   )
 }

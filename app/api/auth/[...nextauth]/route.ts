@@ -2,23 +2,7 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import type { NextRequest } from "next/server"
 
-// Mock user database (in production, use a real database)
-const users = [
-  {
-    id: "1",
-    email: "admin@datn.io",
-    password: "admin123", // In production, hash passwords
-    name: "Admin User",
-    role: "admin",
-  },
-  {
-    id: "2",
-    email: "user@datn.io",
-    password: "user123",
-    name: "Test User",
-    role: "user",
-  },
-]
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
 
 export const authOptions = {
   providers: [
@@ -33,22 +17,39 @@ export const authOptions = {
           return null
         }
 
-        const user = users.find(
-          (u) =>
-            u.email === credentials.email &&
-            u.password === credentials.password
-        )
+        try {
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          })
 
-        if (user) {
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
+          if (!response.ok) {
+            return null
           }
-        }
 
-        return null
+          const data = await response.json()
+          const user = data.user
+
+          if (user) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role || "USER",
+            }
+          }
+
+          return null
+        } catch (error) {
+          console.error("Auth error:", error)
+          return null
+        }
       },
     }),
   ],

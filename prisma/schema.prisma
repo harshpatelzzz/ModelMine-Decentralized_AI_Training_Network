@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  jobs         Job[]
+}
+
+enum UserRole {
+  USER
+  NODE
+  ADMIN
+}
+
+model Job {
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  config         Json
+  status         JobStatus @default(PENDING)
+  progress       Int       @default(0)
+  result         Json?
+  submitterId    String
+  submitter      User      @relation(fields: [submitterId], references: [id], onDelete: Cascade)
+  assignedNodeId String?
+  assignedNode   Node?     @relation(fields: [assignedNodeId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  contributions  Contribution[]
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  FAILED
+  COMPLETED
+  CANCELED
+}
+
+model Node {
+  id            String         @id @default(cuid())
+  name          String
+  status        NodeStatus     @default(OFFLINE)
+  metrics       Json?
+  lastSeen      DateTime?
+  createdAt     DateTime       @default(now())
+  contributions Contribution[]
+  jobs          Job[]
+}
+
+enum NodeStatus {
+  ONLINE
+  OFFLINE
+  BUSY
+  MAINTENANCE
+}
+
+model Contribution {
+  id        String   @id @default(cuid())
+  nodeId    String
+  node      Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  details   Json
+  createdAt DateTime @default(now())
+}
+
+model LedgerBlock {
+  id        String   @id @default(cuid())
+  prevHash  String?
+  data      Json
+  timestamp DateTime @default(now())
+  hash      String   @unique
+}
+

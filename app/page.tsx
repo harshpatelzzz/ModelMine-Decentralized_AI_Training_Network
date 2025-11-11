@@ -1,12 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { motion } from "framer-motion"
-import { ArrowRight, Network, Cpu, Zap, TrendingUp, Github, FileText, Mail } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Network, Cpu, Zap, TrendingUp } from "lucide-react"
 import axios from "axios"
+import { Hero } from "@/components/ui/hero"
+import { StatCard } from "@/components/ui/stat-card"
+import { FeatureCard } from "@/components/ui/feature-card"
+import { Footer } from "@/components/ui/footer"
+import { ParticlesCanvas } from "@/components/ui/particles-canvas"
 
 interface NetworkStats {
   activeNodes: number
@@ -38,19 +40,19 @@ export default function Home() {
   const statCards = [
     {
       title: "Active Nodes",
-      value: stats.activeNodes.toString(),
+      value: stats.activeNodes,
       icon: Network,
       description: "Computing nodes online",
     },
     {
       title: "Total Tokens Staked",
-      value: stats.totalTokensStaked.toLocaleString(),
+      value: stats.totalTokensStaked,
       icon: TrendingUp,
       description: "Network value",
     },
     {
       title: "Completed Jobs",
-      value: stats.completedJobs.toString(),
+      value: stats.completedJobs,
       icon: Zap,
       description: "Successfully trained",
     },
@@ -62,167 +64,114 @@ export default function Home() {
     },
   ]
 
+  const features = [
+    {
+      icon: Cpu,
+      title: "Distributed Computing",
+      description: "Leverage the power of decentralized nodes for AI model training across a global network",
+    },
+    {
+      icon: Network,
+      title: "Network Transparency",
+      description: "Track job progress and node contributions in real-time with full blockchain transparency",
+    },
+    {
+      icon: Zap,
+      title: "Token Rewards",
+      description: "Earn tokens for contributing computational resources to the network",
+    },
+  ]
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  }
+
   return (
-    <div className="flex flex-col">
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center py-20 px-4"
-      >
-        <div className="max-w-4xl mx-auto">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent"
-          >
-            Decentralized AI Training Network
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-xl md:text-2xl text-muted-foreground mb-8"
-          >
-            Connect AI model creators, node operators, and validators in a
-            decentralized environment
-          </motion.p>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Animated Particles Background */}
+      <ParticlesCanvas />
+
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <Hero />
+
+        {/* Stats Grid */}
+        <motion.section
+          className="container mx-auto px-4 py-20"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20"
+            variants={containerVariants}
           >
-            <Link href="/submit-job">
-              <Button size="lg" className="text-lg px-8 glow">
-                Submit Training Job
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button size="lg" variant="outline" className="text-lg px-8">
-                View Dashboard
-              </Button>
-            </Link>
+            {statCards.map((stat, index) => (
+              <StatCard
+                key={stat.title}
+                title={stat.title}
+                value={stat.value}
+                icon={stat.icon}
+                description={stat.description}
+                delay={index * 0.1}
+              />
+            ))}
           </motion.div>
-        </div>
-      </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20"
-      >
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <motion.div
-              key={stat.title}
+          {/* Features Section */}
+          <motion.div
+            className="mb-20"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold text-center mb-4"
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 + index * 0.1 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
-              <Card className="glass hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      {stat.title}
-                    </CardTitle>
-                    <Icon className="h-5 w-5 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1">{stat.value}</div>
-                  <CardDescription>{stat.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )
-        })}
-      </motion.div>
-
-      {/* Features Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mb-20"
-      >
-        <h2 className="text-3xl font-bold text-center mb-12">Platform Features</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card className="glass">
-            <CardHeader>
-              <Cpu className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Distributed Computing</CardTitle>
-              <CardDescription>
-                Leverage the power of decentralized nodes for AI model training
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card className="glass">
-            <CardHeader>
-              <Network className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Network Transparency</CardTitle>
-              <CardDescription>
-                Track job progress and node contributions in real-time
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card className="glass">
-            <CardHeader>
-              <Zap className="h-8 w-8 text-primary mb-2" />
-              <CardTitle>Token Rewards</CardTitle>
-              <CardDescription>
-                Earn tokens for contributing computational resources to the network
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-      </motion.div>
-
-      {/* Footer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        className="border-t border-border py-12 mt-20"
-      >
-        <div className="grid md:grid-cols-3 gap-8 text-center md:text-left">
-          <div>
-            <h3 className="font-bold mb-4">DATN</h3>
-            <p className="text-sm text-muted-foreground">
-              Decentralized AI Training Network
-            </p>
-          </div>
-            <div>
-              <h3 className="font-bold mb-4">Resources</h3>
-              <div className="flex flex-col gap-2">
-                <Link href="#" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-                  <FileText className="h-4 w-4" />
-                  Documentation
-                </Link>
-                <Link href="https://github.com/harshpatelzzz/decentralized-ai-training-network" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-                  <Github className="h-4 w-4" />
-                  GitHub
-                </Link>
-              </div>
+              <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--secondary)] to-[var(--primary)] bg-clip-text text-transparent">
+                Platform Features
+              </span>
+            </motion.h2>
+            <motion.p
+              className="text-center text-[var(--subtext)] mb-12 text-lg"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              Everything you need to train AI models in a decentralized network
+            </motion.p>
+            <div className="grid md:grid-cols-3 gap-8">
+              {features.map((feature, index) => (
+                <FeatureCard
+                  key={feature.title}
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  delay={index * 0.1}
+                />
+              ))}
             </div>
-            <div>
-              <h3 className="font-bold mb-4">Contact</h3>
-              <Link href="mailto:harshpatel174101@gmail.com" className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center md:justify-start gap-2">
-                <Mail className="h-4 w-4" />
-                harshpatel174101@gmail.com
-              </Link>
-            </div>
-        </div>
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          © 2024 DATN. All rights reserved.
-        </div>
-      </motion.footer>
+          </motion.div>
+        </motion.section>
+
+        {/* Footer */}
+        <Footer />
+      </div>
     </div>
   )
 }

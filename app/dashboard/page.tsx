@@ -1,32 +1,99 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
-import { Clock, CheckCircle2, Loader2, TrendingUp, Users, Coins } from "lucide-react"
+import { Clock, CheckCircle2, Loader2, TrendingUp, XCircle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
-import axios from "axios"
-import type { Job } from "@/lib/mock-data"
+import { useSocket } from "@/lib/use-socket"
+import { toast } from "sonner"
 
-type StatusFilter = "all" | "pending" | "in-progress" | "completed"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+
+interface Job {
+  id: string
+  title: string
+  description?: string
+  config: any
+  status: "PENDING" | "RUNNING" | "FAILED" | "COMPLETED" | "CANCELED"
+  progress: number
+  result?: any
+  submitterId: string
+  createdAt: string
+  updatedAt: string
+}
+
+type StatusFilter = "all" | "PENDING" | "RUNNING" | "COMPLETED" | "FAILED"
 
 export default function DashboardPage() {
+  const { data: session } = useSession()
+  const socket = useSocket()
   const [jobs, setJobs] = useState<Job[]>([])
   const [filter, setFilter] = useState<StatusFilter>("all")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchJobs()
-  }, [])
+    if (session?.user?.id) {
+      fetchJobs()
+    }
+  }, [session])
+
+  // Listen for real-time job progress updates
+  useEffect(() => {
+    if (!socket) return
+
+    const handleProgress = (data: { jobId: string; progress: number; status: string; result?: any }) => {
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.id === data.jobId
+            ? {
+                ...job,
+                progress: data.progress,
+                status: data.status as Job["status"],
+                result: data.result || job.result,
+              }
+            : job
+        )
+      )
+
+      if (data.status === "COMPLETED") {
+        toast.success("Job Completed!", {
+          description: `Job "${data.jobId.slice(0, 8)}..." has finished processing.`,
+        })
+      } else if (data.status === "FAILED") {
+        toast.error("Job Failed", {
+          description: `Job "${data.jobId.slice(0, 8)}..." encountered an error.`,
+        })
+      }
+    }
+
+    // Listen to all job progress events
+    jobs.forEach((job) => {
+      socket.on(`job:${job.id}:progress`, handleProgress)
+    })
+
+    return () => {
+      jobs.forEach((job) => {
+        socket.off(`job:${job.id}:progress`, handleProgress)
+      })
+    }
+  }, [socket, jobs.length])
 
   const fetchJobs = async () => {
+    if (!session?.user?.id) return
+
     try {
-      const res = await axios.get("/api/jobs")
-      setJobs(res.data)
+      const response = await fetch(`${API_URL}/jobs?userId=${session.user.id}`)
+      if (!response.ok) throw new Error("Failed to fetch jobs")
+      
+      const data = await response.json()
+      setJobs(data.jobs || [])
     } catch (error) {
       console.error("Failed to fetch jobs:", error)
+      toast.error("Failed to load jobs")
     } finally {
       setLoading(false)
     }
@@ -39,32 +106,47 @@ export default function DashboardPage() {
 
   const stats = {
     total: jobs.length,
-    pending: jobs.filter((j) => j.status === "pending").length,
-    inProgress: jobs.filter((j) => j.status === "in-progress").length,
-    completed: jobs.filter((j) => j.status === "completed").length,
+    pending: jobs.filter((j) => j.status === "PENDING").length,
+    running: jobs.filter((j) => j.status === "RUNNING").length,
+    completed: jobs.filter((j) => j.status === "COMPLETED").length,
+    failed: jobs.filter((j) => j.status === "FAILED").length,
   }
 
   const getStatusBadge = (status: Job["status"]) => {
     switch (status) {
-      case "pending":
+      case "PENDING":
         return (
           <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />
             Pending
           </Badge>
         )
-      case "in-progress":
+      case "RUNNING":
         return (
           <Badge variant="default" className="gap-1 bg-blue-500">
             <Loader2 className="h-3 w-3 animate-spin" />
-            In Progress
+            Running
           </Badge>
         )
-      case "completed":
+      case "COMPLETED":
         return (
           <Badge variant="default" className="gap-1 bg-green-500">
             <CheckCircle2 className="h-3 w-3" />
             Completed
+          </Badge>
+        )
+      case "FAILED":
+        return (
+          <Badge variant="default" className="gap-1 bg-red-500">
+            <XCircle className="h-3 w-3" />
+            Failed
+          </Badge>
+        )
+      case "CANCELED":
+        return (
+          <Badge variant="outline" className="gap-1">
+            <XCircle className="h-3 w-3" />
+            Canceled
           </Badge>
         )
     }
@@ -84,7 +166,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="glass">
           <CardHeader className="pb-2">
             <CardDescription>Total Jobs</CardDescription>
@@ -99,8 +181,8 @@ export default function DashboardPage() {
         </Card>
         <Card className="glass">
           <CardHeader className="pb-2">
-            <CardDescription>In Progress</CardDescription>
-            <CardTitle className="text-3xl text-blue-500">{stats.inProgress}</CardTitle>
+            <CardDescription>Running</CardDescription>
+            <CardTitle className="text-3xl text-blue-500">{stats.running}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="glass">
@@ -109,12 +191,18 @@ export default function DashboardPage() {
             <CardTitle className="text-3xl text-green-500">{stats.completed}</CardTitle>
           </CardHeader>
         </Card>
+        <Card className="glass">
+          <CardHeader className="pb-2">
+            <CardDescription>Failed</CardDescription>
+            <CardTitle className="text-3xl text-red-500">{stats.failed}</CardTitle>
+          </CardHeader>
+        </Card>
       </div>
 
-      {/* Filters & Sort */}
+      {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
-          {(["all", "pending", "in-progress", "completed"] as StatusFilter[]).map(
+          {(["all", "PENDING", "RUNNING", "COMPLETED", "FAILED"] as StatusFilter[]).map(
             (status) => (
               <Button
                 key={status}
@@ -122,31 +210,10 @@ export default function DashboardPage() {
                 onClick={() => setFilter(status)}
                 className="capitalize"
               >
-                {status === "all" ? "All Jobs" : status.replace("-", " ")}
+                {status === "all" ? "All Jobs" : status.toLowerCase()}
               </Button>
             )
           )}
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Sort:</span>
-          <select
-            className="px-3 py-1.5 rounded-md border border-input bg-background text-sm"
-            onChange={(e) => {
-              const sorted = [...jobs]
-              if (e.target.value === "newest") {
-                sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-              } else if (e.target.value === "oldest") {
-                sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-              } else if (e.target.value === "stake") {
-                sorted.sort((a, b) => b.tokenStake - a.tokenStake)
-              }
-              setJobs(sorted)
-            }}
-          >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="stake">Highest Stake</option>
-          </select>
         </div>
       </div>
 
@@ -173,7 +240,7 @@ export default function DashboardPage() {
               <Card className="glass hover:shadow-lg transition-shadow h-full">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <CardTitle className="text-xl">{job.modelName}</CardTitle>
+                    <CardTitle className="text-xl">{job.title}</CardTitle>
                     {getStatusBadge(job.status)}
                   </div>
                   <CardDescription className="line-clamp-2">
@@ -181,7 +248,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {job.status !== "pending" && (
+                  {(job.status === "RUNNING" || job.status === "COMPLETED") && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-muted-foreground">
@@ -195,47 +262,35 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Users className="h-4 w-4" />
-                        Contributors
+                  {job.result && (
+                    <div className="p-3 rounded-lg bg-primary/10">
+                      <div className="flex items-center gap-1 text-sm font-medium mb-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Results
                       </div>
-                      <div className="font-semibold">{job.contributors}</div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Coins className="h-4 w-4" />
-                        Tokens
-                      </div>
-                      <div className="font-semibold">
-                        {job.tokensEarned.toLocaleString()}
-                      </div>
-                    </div>
-                    {job.accuracy && (
-                      <div>
-                        <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                          <TrendingUp className="h-4 w-4" />
-                          Accuracy
-                        </div>
-                        <div className="font-semibold">{job.accuracy}%</div>
-                      </div>
-                    )}
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Coins className="h-4 w-4" />
-                        Stake
-                      </div>
-                      <div className="font-semibold">
-                        {job.tokenStake.toLocaleString()}
+                      <div className="text-xs space-y-1">
+                        {job.result.accuracy && (
+                          <div>Accuracy: {job.result.accuracy}%</div>
+                        )}
+                        {job.result.loss && (
+                          <div>Loss: {job.result.loss}</div>
+                        )}
+                        {job.result.epochs && (
+                          <div>Epochs: {job.result.epochs}</div>
+                        )}
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="pt-2 border-t border-border">
                     <p className="text-xs text-muted-foreground">
                       Created: {new Date(job.createdAt).toLocaleDateString()}
                     </p>
+                    {job.updatedAt !== job.createdAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Updated: {new Date(job.updatedAt).toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -246,4 +301,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-

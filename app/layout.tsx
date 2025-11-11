@@ -53,12 +53,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} antialiased scroll-smooth`}>
+      <body className={`${inter.variable} antialiased scroll-smooth`} style={{ background: 'var(--bg)' }}>
         <Providers>
-          <ThemeProvider defaultTheme="system" storageKey="datn-theme">
-            <div className="min-h-screen bg-background">
+          <ThemeProvider defaultTheme="dark" storageKey="datn-theme">
+            <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
               <Navbar />
-              <main className="container mx-auto px-4 py-8">
+              <main>
                 {children}
               </main>
               <Toaster />

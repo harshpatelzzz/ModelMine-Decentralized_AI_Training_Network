@@ -35,8 +35,26 @@ export default function SignupPage() {
     setLoading(true)
 
     try {
-      // In production, create user account via API
-      // For now, simulate signup and auto-login
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+      
+      // Create user account via API
+      const response = await fetch(`${API_URL}/auth/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          name: formData.name,
+          password: formData.password,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Signup failed")
+      }
+
       toast.success("Account created!", {
         description: "Your account has been created successfully.",
       })
@@ -52,9 +70,9 @@ export default function SignupPage() {
         router.push("/dashboard")
         router.refresh()
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Signup failed", {
-        description: "An error occurred. Please try again.",
+        description: error.message || "An error occurred. Please try again.",
       })
     } finally {
       setLoading(false)

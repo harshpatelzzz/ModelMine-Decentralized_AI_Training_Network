@@ -1,13 +1,94 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  app:
-    build:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: modelmine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/modelmine
+      REDIS_HOST: redis
+      JWT_SECRET: dev_secret
+      FRONTEND_URL: http://localhost:3000
+      PORT: 4000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./api:/app
+      - ./prisma:/app/prisma
+      - /app/node_modules
+    command: sh -c "cd /app && npx prisma generate && npx prisma migrate deploy && npm run start"
+
+  worker:
+    build: 
+      context: .
+      dockerfile: ./api/Dockerfile
+    command: node dist/worker.js
+    depends_on:
+      - api
+      - redis
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/modelmine
+      REDIS_HOST: redis
+    volumes:
+      - ./api:/app
+      - ./prisma:/app/prisma
+      - /app/node_modules
+
+  node-agent:
+    build: ./node-agent
+    environment:
+      API_URL: http://api:4000
+      NODE_NAME: node-agent-1
+    depends_on:
+      - api
+
+  nextjs:
+    build: .
+    depends_on:
+      - api
+    environment:
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: dev_secret
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/modelmine
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
 
+volumes:
+  pgdata:

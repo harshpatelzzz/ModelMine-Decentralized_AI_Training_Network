@@ -45,73 +45,81 @@
 
 :root {
   --radius: 1rem;
-  /* Light Mode - Indigo + Slate */
-  --background: rgb(255 255 255);
-  --foreground: rgb(15 23 42); /* slate-900 */
-  --card: rgb(255 255 255);
-  --card-foreground: rgb(15 23 42);
-  --popover: rgb(255 255 255);
-  --popover-foreground: rgb(15 23 42);
-  --primary: rgb(99 102 241); /* indigo-500 */
-  --primary-foreground: rgb(255 255 255);
-  --secondary: rgb(241 245 249); /* slate-100 */
-  --secondary-foreground: rgb(15 23 42);
-  --muted: rgb(241 245 249);
-  --muted-foreground: rgb(100 116 139); /* slate-500 */
-  --accent: rgb(238 242 255); /* indigo-50 */
-  --accent-foreground: rgb(99 102 241);
-  --destructive: rgb(239 68 68);
-  --border: rgb(226 232 240); /* slate-200 */
-  --input: rgb(226 232 240);
-  --ring: rgb(99 102 241);
-  --chart-1: rgb(99 102 241);
-  --chart-2: rgb(139 92 246);
-  --chart-3: rgb(59 130 246);
-  --chart-4: rgb(236 72 153);
-  --chart-5: rgb(251 146 60);
-  --sidebar: rgb(248 250 252); /* slate-50 */
-  --sidebar-foreground: rgb(15 23 42);
-  --sidebar-primary: rgb(99 102 241);
-  --sidebar-primary-foreground: rgb(255 255 255);
-  --sidebar-accent: rgb(241 245 249);
-  --sidebar-accent-foreground: rgb(15 23 42);
-  --sidebar-border: rgb(226 232 240);
-  --sidebar-ring: rgb(99 102 241);
+  
+  /* Futuristic Cyber Theme Variables */
+  --bg: #090d13;
+  --panel: #0f1621;
+  --text: #e5ecff;
+  --subtext: #b0bad3;
+  --primary: #9457ff;
+  --secondary: #14e1ff;
+  --accent: #ff3fb4;
+  --border: rgba(148, 87, 255, 0.2);
+  --glow: 0 0 24px rgba(148, 87, 255, 0.4), 0 0 48px rgba(20, 225, 255, 0.2);
+  
+  /* Light Mode - Fallback */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel);
+  --popover-foreground: var(--text);
+  --primary-foreground: #ffffff;
+  --secondary-foreground: var(--text);
+  --muted: rgba(15, 22, 33, 0.6);
+  --muted-foreground: var(--subtext);
+  --accent-foreground: var(--text);
+  --destructive: #ef4444;
+  --input: rgba(148, 87, 255, 0.1);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: var(--secondary);
+  --chart-3: var(--accent);
+  --chart-4: #f59e0b;
+  --chart-5: #10b981;
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(148, 87, 255, 0.1);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
 }
 
 .dark {
-  /* Dark Mode - Violet + Deep Gray */
-  --background: rgb(17 24 39); /* gray-900 */
-  --foreground: rgb(249 250 251); /* gray-50 */
-  --card: rgb(31 41 55); /* gray-800 */
-  --card-foreground: rgb(249 250 251);
-  --popover: rgb(31 41 55);
-  --popover-foreground: rgb(249 250 251);
-  --primary: rgb(124 58 237); /* violet-600 */
-  --primary-foreground: rgb(255 255 255);
-  --secondary: rgb(31 41 55);
-  --secondary-foreground: rgb(249 250 251);
-  --muted: rgb(31 41 55);
-  --muted-foreground: rgb(156 163 175); /* gray-400 */
-  --accent: rgb(55 48 163); /* violet-900 */
-  --accent-foreground: rgb(196 181 253); /* violet-300 */
-  --destructive: rgb(239 68 68);
-  --border: rgb(55 65 81); /* gray-700 */
-  --input: rgb(55 65 81);
-  --ring: rgb(124 58 237);
-  --chart-1: rgb(124 58 237);
-  --chart-2: rgb(167 139 250);
-  --chart-3: rgb(96 165 250);
-  --chart-4: rgb(244 114 182);
-  --chart-5: rgb(251 146 60);
-  --sidebar: rgb(17 24 39);
-  --sidebar-foreground: rgb(249 250 251);
-  --sidebar-primary: rgb(124 58 237);
-  --sidebar-primary-foreground: rgb(255 255 255);
-  --sidebar-accent: rgb(31 41 55);
-  --sidebar-accent-foreground: rgb(249 250 251);
-  --sidebar-border: rgb(55 65 81);
-  --sidebar-ring: rgb(124 58 237);
+  /* Dark Mode - Futuristic Cyber */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel);
+  --popover-foreground: var(--text);
+  --primary: var(--primary);
+  --primary-foreground: #ffffff;
+  --secondary: rgba(20, 225, 255, 0.1);
+  --secondary-foreground: var(--secondary);
+  --muted: rgba(15, 22, 33, 0.6);
+  --muted-foreground: var(--subtext);
+  --accent: rgba(255, 63, 180, 0.1);
+  --accent-foreground: var(--accent);
+  --destructive: #ef4444;
+  --border: var(--border);
+  --input: rgba(148, 87, 255, 0.1);
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: var(--secondary);
+  --chart-3: var(--accent);
+  --chart-4: #f59e0b;
+  --chart-5: #10b981;
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(148, 87, 255, 0.1);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
 }
 
 @layer base {
@@ -120,6 +128,69 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    background: var(--bg);
+    color: var(--text);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Glassmorphic Card Utility */
+.card {
+  @apply rounded-2xl border border-[var(--border)] bg-[var(--panel)]/80 backdrop-blur-xl transition-transform duration-300;
+  box-shadow: var(--glow);
+}
+
+.card:hover {
+  @apply scale-[1.02];
+  box-shadow: 0 0 40px var(--primary), 0 0 80px rgba(20, 225, 255, 0.2);
+}
+
+/* Glow Hover Effect */
+.glow-hover:hover {
+  box-shadow: 0 0 40px var(--primary);
+  @apply scale-[1.02];
+}
+
+/* Neon Border Effect */
+.neon-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    var(--primary),
+    var(--secondary),
+    var(--accent),
+    var(--primary)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -130,9 +201,59 @@
 
 /* Glow effect for buttons and cards */
 .glow {
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--glow);
 }
 
-.dark .glow {
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.4);
+/* Aurora Gradient Background */
+.aurora-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at top,
+    rgba(148, 87, 255, 0.15) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    ellipse at bottom right,
+    rgba(20, 225, 255, 0.1) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    ellipse at bottom left,
+    rgba(255, 63, 180, 0.1) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gradient Animation */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+  background-size: 200% 200%;
+}
+
+/* Background Size Utility */
+.bg-size-200 {
+  background-size: 200% 100%;
+}
+
+.bg-pos-0 {
+  background-position: 0% 50%;
+}
+
+.bg-pos-100 {
+  background-position: 100% 50%;
 }

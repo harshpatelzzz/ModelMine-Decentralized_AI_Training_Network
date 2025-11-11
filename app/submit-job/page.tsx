@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { motion } from "framer-motion"
 import { FileText, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,56 +10,72 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Slider } from "@/components/ui/slider"
-import axios from "axios"
 import { toast } from "sonner"
 
 export default function SubmitJobPage() {
   const router = useRouter()
+  const { data: session } = useSession()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
-    modelName: "",
-    datasetUrl: "",
-    computeRequirement: [50],
-    tokenStake: "",
+    title: "",
     description: "",
+    config: "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!session?.user?.id) {
+      toast.error("Authentication required", {
+        description: "Please log in to submit a job.",
+      })
+      router.push("/login")
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await axios.post("/api/jobs", {
-        modelName: formData.modelName,
-        datasetUrl: formData.datasetUrl,
-        computeRequirement: formData.computeRequirement[0],
-        tokenStake: Number(formData.tokenStake),
-        description: formData.description,
+      let config
+      try {
+        config = JSON.parse(formData.config || "{}")
+      } catch {
+        throw new Error("Invalid JSON in config field")
+      }
+
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"
+      
+      const response = await fetch(`${API_URL}/jobs`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          config,
+          submitterId: session.user.id,
+        }),
       })
 
-      const transactionHash = response.data.transactionHash
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to submit job")
+      }
 
-      toast.success("Transaction Successful!", {
-        description: (
-          <div>
-            <p className="font-medium">{response.data.message}</p>
-            {transactionHash && (
-              <p className="text-xs font-mono mt-1 opacity-80">
-                TX: {transactionHash.slice(0, 10)}...{transactionHash.slice(-8)}
-              </p>
-            )}
-          </div>
-        ),
+      const data = await response.json()
+
+      toast.success("Job Submitted!", {
+        description: `Job "${data.job.title}" has been queued for processing.`,
         duration: 5000,
       })
 
       setTimeout(() => {
         router.push("/dashboard")
       }, 2000)
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Failed to submit job", {
-        description: "Please check your inputs and try again.",
+        description: error.message || "Please check your inputs and try again.",
       })
       setLoading(false)
     }
@@ -88,74 +105,16 @@ export default function SubmitJobPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="modelName">Model Name</Label>
+                <Label htmlFor="title">Job Title</Label>
                 <Input
-                  id="modelName"
-                  placeholder="e.g., GPT-NeoX-20B"
-                  value={formData.modelName}
+                  id="title"
+                  placeholder="e.g., GPT-NeoX-20B Training"
+                  value={formData.title}
                   onChange={(e) =>
-                    setFormData({ ...formData, modelName: e.target.value })
+                    setFormData({ ...formData, title: e.target.value })
                   }
                   required
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="datasetUrl">Dataset URL</Label>
-                <Input
-                  id="datasetUrl"
-                  type="url"
-                  placeholder="https://dataset.example.com/your-dataset"
-                  value={formData.datasetUrl}
-                  onChange={(e) =>
-                    setFormData({ ...formData, datasetUrl: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="computeRequirement">
-                    Compute Requirement
-                  </Label>
-                  <span className="text-sm font-medium text-primary">
-                    {formData.computeRequirement[0]}%
-                  </span>
-                </div>
-                <Slider
-                  id="computeRequirement"
-                  min={10}
-                  max={100}
-                  step={5}
-                  value={formData.computeRequirement}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, computeRequirement: value })
-                  }
-                />
-                <p className="text-sm text-muted-foreground">
-                  Higher requirements may take longer to process but ensure
-                  better resource allocation
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="tokenStake">Token Stake</Label>
-                <Input
-                  id="tokenStake"
-                  type="number"
-                  placeholder="5000"
-                  min="100"
-                  step="100"
-                  value={formData.tokenStake}
-                  onChange={(e) =>
-                    setFormData({ ...formData, tokenStake: e.target.value })
-                  }
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Amount of tokens to stake for this training job
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -169,6 +128,23 @@ export default function SubmitJobPage() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="config">Config JSON</Label>
+                <Textarea
+                  id="config"
+                  placeholder='{"epochs": 10, "batchSize": 32, "learningRate": 0.001}'
+                  rows={8}
+                  value={formData.config}
+                  onChange={(e) =>
+                    setFormData({ ...formData, config: e.target.value })
+                  }
+                  required
+                />
+                <p className="text-sm text-muted-foreground">
+                  Enter training configuration as valid JSON
+                </p>
               </div>
 
               <Button
