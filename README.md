@@ -348,7 +348,7 @@ MIT
 
 
 ## 🤝 Special Mention
-- UI/UX Inspired
+- UI/UX Inspired By: Chhavi Pareek and "Special Thanks for UI Contribution"
 
 ## 📧 Support
 For questions or support:
