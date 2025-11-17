@@ -346,12 +346,12 @@ MIT
 - Email: harshpatel174101@gmail.com
 - Project: [decentralized-ai-training-network](https://github.com/harshpatelzzz/decentralized-ai-training-network)
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🤝 Special Mention
+- UI/UX Inspired
 
 ## 📧 Support
-
 For questions or support:
 - Email: harshpatel174101@gmail.com
 - GitHub Issues: [Create an issue](https://github.com/harshpatelzzz/decentralized-ai-training-network/issues)
+
